@@ -24,9 +24,15 @@ async function isCurrentEventActive(): Promise<boolean> {
   return now.isAfter(eventStartsAt) && now.isBefore(eventEndsAt);
 }
 
+async function getTypesTickets() {
+  const types = await eventRepository.findTypes();
+  return types;
+}
+
 const eventsService = {
   getFirstEvent,
   isCurrentEventActive,
+  getTypesTickets
 };
 
 export default eventsService;
