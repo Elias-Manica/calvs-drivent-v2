@@ -1,7 +1,7 @@
-import { notFoundError } from "@/errors";
+import { notFoundError, requestError } from "@/errors";
 import eventRepository from "@/repositories/event-repository";
 import { exclude } from "@/utils/prisma-utils";
-import { Event } from "@prisma/client";
+import { Event, TicketStatus } from "@prisma/client";
 import dayjs from "dayjs";
 
 async function getFirstEvent(): Promise<GetFirstEventResult> {
@@ -29,10 +29,30 @@ async function getTypesTickets() {
   return types;
 }
 
+async function getTickets() {
+  const ticket = await eventRepository.findTickets();
+  if(!ticket) {
+    throw notFoundError();
+  }
+  return ticket;
+}
+
+async function createTicket(ticketTypeId: number, userId: number) {
+  if(!ticketTypeId) {
+    throw requestError(400, "BAD_REQUEST");
+  }
+  console.log(userId, " userid");
+  const response = await eventRepository.postTicket(ticketTypeId, userId, TicketStatus.RESERVED);
+  console.log(response, " response");
+  return response;
+}
+
 const eventsService = {
   getFirstEvent,
   isCurrentEventActive,
-  getTypesTickets
+  getTypesTickets,
+  getTickets,
+  createTicket
 };
 
 export default eventsService;
