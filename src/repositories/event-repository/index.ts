@@ -40,8 +40,19 @@ async function postTicket(ticketTypeId: number, enrollmentId: number, status: Ti
   });
 }
 
+async function updateTicket(idTicket: number) {
+  return prisma.ticket.update({
+    where: {
+      id: idTicket
+    },
+    data: {
+      status: TicketStatus.PAID
+    }
+  });
+}
+
 const eventRepository = {
-  findFirst, findTypes, findTickets, postTicket, findSpecifyTicket
+  findFirst, findTypes, findTickets, postTicket, findSpecifyTicket, updateTicket
 };
 
 export default eventRepository;

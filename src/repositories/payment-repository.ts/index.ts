@@ -19,8 +19,19 @@ async function findWithEnrollmentId(ticketId: number) {
   });
 }
 
+async function createPaymentPrisma(ticketId: number, cardIssur: string, cardLastDigits: string, value: number) {
+  return prisma.payment.create({
+    data: {
+      ticketId: ticketId,
+      cardIssuer: cardIssur,
+      cardLastDigits: cardLastDigits,
+      value: value
+    },
+  });
+}
+
 const paymentRepository = {
-  findFirst, findWithEnrollmentId
+  findFirst, findWithEnrollmentId, createPaymentPrisma
 };
 
 export default paymentRepository;
