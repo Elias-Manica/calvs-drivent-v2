@@ -1,4 +1,5 @@
 import { notFoundError, requestError } from "@/errors";
+import enrollmentRepository from "@/repositories/enrollment-repository";
 import eventRepository from "@/repositories/event-repository";
 import { exclude } from "@/utils/prisma-utils";
 import { Event, TicketStatus } from "@prisma/client";
@@ -41,10 +42,13 @@ async function createTicket(ticketTypeId: number, userId: number) {
   if(!ticketTypeId) {
     throw requestError(400, "BAD_REQUEST");
   }
-  console.log(userId, " userid");
-  const response = await eventRepository.postTicket(ticketTypeId, userId, TicketStatus.RESERVED);
-  console.log(response, " response");
-  return response;
+  const enrollmentId = await enrollmentRepository.getEnrollmentByUser(userId);
+
+  const response = await eventRepository.postTicket(ticketTypeId, enrollmentId.id, TicketStatus.RESERVED);
+
+  const returnResponse = await eventRepository.findSpecifyTicket(response.id);
+  
+  return returnResponse;
 }
 
 const eventsService = {
