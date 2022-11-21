@@ -1,16 +1,16 @@
 import paymentRepository from "@/repositories/payment-repository.ts";
-import eventRepository from "@/repositories/event-repository";
 import { notFoundError, requestError, unauthorizedError } from "@/errors";
 import enrollmentRepository from "@/repositories/enrollment-repository";
+import ticketRepository from "@/repositories/tickets-repository";
 
 async function getFirstPayments(ticketId: number, userId: number) {
   if(!ticketId) {
     throw requestError(400, "BAD_REQUEST");
   }
  
-  const verifyUser = await eventRepository.findSpecifyTicket(ticketId);
+  const verifyUser = await ticketRepository.findSpecifyTicket(ticketId);
 
-  const enrollment = await enrollmentRepository.getEnrollmentByUserId(verifyUser.enrollmentId);
+  const enrollment = await enrollmentRepository.getEnrollmentByEnrollmentId(verifyUser.enrollmentId);
   
   if(Number(enrollment.userId) !== Number(userId)) {
     throw unauthorizedError();
@@ -45,13 +45,13 @@ async function createPayment(body: bodyPayment, userId: number) {
     throw requestError(400, "BAD_REQUEST");
   }
 
-  const verifyTicket = await eventRepository.findSpecifyTicket(body.ticketId);
+  const verifyTicket = await ticketRepository.findSpecifyTicket(body.ticketId);
 
   if(!verifyTicket) {
     throw notFoundError();
   }
 
-  const enrollment = await enrollmentRepository.getEnrollmentByUserId(verifyTicket.enrollmentId);
+  const enrollment = await enrollmentRepository.getEnrollmentByEnrollmentId(verifyTicket.enrollmentId);
 
   if(Number(enrollment.userId) !== Number(userId)) {
     throw unauthorizedError();
@@ -59,7 +59,7 @@ async function createPayment(body: bodyPayment, userId: number) {
 
   const payment = await paymentRepository.createPaymentPrisma(body.ticketId, body.cardData.issuer, body.cardData.number.substring(body.cardData.number.length - 4), verifyTicket.TicketType.price);
   
-  await eventRepository.updateTicket(body.ticketId);
+  await ticketRepository.updateTicket(body.ticketId);
 
   return payment;
 }

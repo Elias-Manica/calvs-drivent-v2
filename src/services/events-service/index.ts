@@ -1,8 +1,7 @@
-import { notFoundError, requestError } from "@/errors";
-import enrollmentRepository from "@/repositories/enrollment-repository";
+import { notFoundError } from "@/errors";
 import eventRepository from "@/repositories/event-repository";
 import { exclude } from "@/utils/prisma-utils";
-import { Event, TicketStatus } from "@prisma/client";
+import { Event } from "@prisma/client";
 import dayjs from "dayjs";
 
 async function getFirstEvent(): Promise<GetFirstEventResult> {
@@ -25,38 +24,9 @@ async function isCurrentEventActive(): Promise<boolean> {
   return now.isAfter(eventStartsAt) && now.isBefore(eventEndsAt);
 }
 
-async function getTypesTickets() {
-  const types = await eventRepository.findTypes();
-  return types;
-}
-
-async function getTickets() {
-  const ticket = await eventRepository.findTickets();
-  if(!ticket) {
-    throw notFoundError();
-  }
-  return ticket;
-}
-
-async function createTicket(ticketTypeId: number, userId: number) {
-  if(!ticketTypeId) {
-    throw requestError(400, "BAD_REQUEST");
-  }
-  const enrollmentId = await enrollmentRepository.getEnrollmentByUser(userId);
-
-  const response = await eventRepository.postTicket(ticketTypeId, enrollmentId.id, TicketStatus.RESERVED);
-
-  const returnResponse = await eventRepository.findSpecifyTicket(response.id);
-  
-  return returnResponse;
-}
-
 const eventsService = {
   getFirstEvent,
-  isCurrentEventActive,
-  getTypesTickets,
-  getTickets,
-  createTicket
+  isCurrentEventActive
 };
 
 export default eventsService;
